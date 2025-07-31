@@ -1,16 +1,15 @@
-[project]
+[tool.poetry]
 name = "nsfw"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Thomas Lee",email = "tom@darkstarinternet.com"}
-]
+authors = ["Thomas Lee <tom@darkstarinternet.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-]
 
+[tool.poetry.dependencies]
+nudenet = "^3.4.2"
+python = "^3.12.4"
+textual = "^5.1.1"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
