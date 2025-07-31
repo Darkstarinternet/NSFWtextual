@@ -1,4 +1,7 @@
 
+import multiprocessing
+multiprocessing.set_start_method("spawn", force=True)
+
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Header, Footer, Button, RichLog, Static
@@ -8,10 +11,22 @@ from nudenet import NudeDetector
 import os
 import time
 from textual import work
+import subprocess
+import json
+import threading
+import queue
+
+
+def _reader_thread(pipe, queue):
+    for line in iter(pipe.readline, ''):
+        queue.put(line)
+    pipe.close()
 
 
 class NSFWScanner(App):
     """A Textual app to scan a directory for NSFW images."""
+
+    SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/escort-photos/Marlene"
 
     BINDINGS = [
         Binding("q", "quit", "Quit", key_display="Q"),
@@ -21,36 +36,39 @@ class NSFWScanner(App):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.detector = NudeDetector()
+        self.worker_process = None # Initialize worker_process to None
+
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         yield Header()
         with Container(id="results-container"):
-            yield Static(f"Scanning directory: /Users/Tom/Websites/beddev", id="scan-directory")
+            yield Static(f"Scanning directory: {self.SCAN_DIRECTORY}", id="scan-directory")
             yield Button("Scan", id="scan", variant="primary")
             with Container(id="stats-line"):
                 yield Static("Images scanned: 0", id="scan-count")
                 yield Static("Time elapsed: 00:00:00", id="scan-timer")
             yield RichLog(id="results", wrap=True)
+            yield RichLog(id="error-log", wrap=True, auto_scroll=True)
         yield Footer()
-        
 
-    
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""
         if event.button.id == "scan":
             self.scan_directory()
 
+
     def action_quit(self) -> None:
         """Called in response to key binding."""
         self.exit()
+
 
     @work(exclusive=True, thread=True)
     def scan_directory(self) -> None:
         """Scans the selected directory for NSFW images."""
         results_log = self.query_one("#results")
+        error_log = self.query_one("#error-log")
         scan_count_display = self.query_one("#scan-count", Static)
         scan_timer_display = self.query_one("#scan-timer", Static)
 
@@ -66,28 +84,89 @@ class NSFWScanner(App):
             minutes, seconds = divmod(rem, 60)
             scan_timer_display.update(f"Time elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}")
 
-        timer_id = self.set_interval(1, update_timer)
+        timer_object = self.call_from_thread(lambda: self.set_interval(1, update_timer))
 
-        for root, _, files in os.walk("/Users/Tom/Websites/beddev"):
+        # Start the detector worker subprocess
+        worker_path = os.path.join(os.path.dirname(__file__), "detector_worker.py")
+        self.worker_process = subprocess.Popen(
+            ["python", worker_path],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, # Re-enable stderr redirection
+            text=True,
+            bufsize=1, # Line-buffered
+        )
+
+        stdout_queue = queue.Queue()
+        stderr_queue = queue.Queue()
+
+        stdout_thread = threading.Thread(target=_reader_thread, args=(self.worker_process.stdout, stdout_queue), daemon=True)
+        stderr_thread = threading.Thread(target=_reader_thread, args=(self.worker_process.stderr, stderr_queue), daemon=True)
+
+        stdout_thread.start()
+        stderr_thread.start()
+
+        all_image_paths = []
+        for root, _, files in os.walk(self.SCAN_DIRECTORY):
             for file in files:
                 if file.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
-                    image_path = os.path.join(root, file)
-                    scanned_images += 1
-                    scan_count_display.update(f"Images scanned: {scanned_images}")
+                    all_image_paths.append(os.path.join(root, file))
+
+        # Send image paths to the worker
+        for image_path in all_image_paths:
+            self.worker_process.stdin.write(image_path + "\n")
+        self.worker_process.stdin.write("STOP\n") # Sentinel to stop the worker
+        self.worker_process.stdin.flush() # Ensure all data is sent
+        self.worker_process.stdin.close()
+
+        # Read results from the worker and errors from stderr
+        # The main loop will continuously check queues for updates
+        while self.worker_process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
+            # Read from stdout
+            try:
+                stdout_line = stdout_queue.get_nowait()
+                if stdout_line:
                     try:
-                        result = self.detector.detect(image_path)
-                        if result:
-                            labels = ", ".join([d["class"] for d in result])
-                            results_log.write(f"NSFW: {image_path} - Labels: {labels}")
+                        data = json.loads(stdout_line.strip())
+                        # Always increment scanned_images for each processed image
+                        scanned_images += 1
+                        self.call_from_thread(lambda: scan_count_display.update(f"Images scanned: {scanned_images}"))
+
+                        if data.get("status") == "nsfw_detected" and data.get("labels"):
+                            image_path = data["path"]
+                            labels = ", ".join([d["class"] for d in data["labels"]])
+                            self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path} - Labels: {labels}"))
                             found_nsfw = True
+                        elif data.get("status") == "processed":
+                            pass
+
+                    except json.JSONDecodeError:
+                        self.call_from_thread(lambda: error_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
                     except Exception as e:
-                        results_log.write(
-                            f"Error processing {image_path}: {e}"
-                        )
+                        self.call_from_thread(lambda: error_log.write(f"Error processing worker stdout: {e}"))
+            except queue.Empty:
+                pass
+
+            # Read from stderr
+            try:
+                stderr_line = stderr_queue.get_nowait()
+                if stderr_line:
+                    self.call_from_thread(lambda: error_log.write(f"Worker Error: {stderr_line.strip()}"))
+            except queue.Empty:
+                pass
+
+            # Small sleep to prevent busy-waiting
+            time.sleep(0.01)
+
+        # Ensure all threads are joined and process is waited for after loop breaks
+        stdout_thread.join()
+        stderr_thread.join()
+        self.worker_process.wait() # Final wait to ensure process is truly finished
+
         if not found_nsfw:
-            results_log.write("No NSFW images found.")
-        results_log.write("Scan complete.")
-        self.call_from_thread(lambda: self.clear_interval(timer_id))
+            self.call_from_thread(lambda: results_log.write("No NSFW images found."))
+        self.call_from_thread(lambda: results_log.write("Scan complete."))
+        self.call_from_thread(lambda: timer_object.stop())
 
 
 if __name__ == "__main__":
