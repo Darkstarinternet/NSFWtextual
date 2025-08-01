@@ -1,4 +1,3 @@
-
 import multiprocessing
 multiprocessing.set_start_method("spawn", force=True)
 
@@ -15,6 +14,7 @@ import subprocess
 import json
 import threading
 import queue
+from nsfw.settings_screen import SettingsScreen
 
 
 def _reader_thread(pipe, queue):
@@ -30,13 +30,22 @@ class NSFWScanner(App):
 
     BINDINGS = [
         Binding("q", "quit", "Quit", key_display="Q"),
+        Binding("s", "show_settings", "Settings", key_display="S"),
     ]
 
-    CSS_PATH = "tcss/main.tcss"
+    DEFAULT_LABELS = {"female_genitalia", "male_genitalia", "buttocks", "female_breast", "anus", "face"}
+
+    SCREENS = {"settings": SettingsScreen}
+
+    CSS_PATH = "nsfw/tcss/main.tcss"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.worker_process = None # Initialize worker_process to None
+        self.selected_labels = set(self.DEFAULT_LABELS) # Initialize with default labels
+
+    def on_mount(self) -> None:
+        pass
 
 
     def compose(self) -> ComposeResult:
@@ -59,9 +68,19 @@ class NSFWScanner(App):
             self.scan_directory()
 
 
+    def handle_settings_result(self, selected_labels: set[str]) -> None:
+        """Handle the result from the settings screen."""
+        self.selected_labels = selected_labels
+        self.query_one("#results").write(f"Selected labels: {self.selected_labels}")
+
+
     def action_quit(self) -> None:
         """Called in response to key binding."""
         self.exit()
+
+    def action_show_settings(self) -> None:
+        """Show the settings screen."""
+        self.app.push_screen(SettingsScreen(initial_labels=self.selected_labels), self.handle_settings_result)
 
 
     @work(exclusive=True, thread=True)
@@ -87,7 +106,7 @@ class NSFWScanner(App):
         timer_object = self.call_from_thread(lambda: self.set_interval(1, update_timer))
 
         # Start the detector worker subprocess
-        worker_path = os.path.join(os.path.dirname(__file__), "detector_worker.py")
+        worker_path = os.path.join(os.path.dirname(__file__), "nsfw", "detector_worker.py")
         self.worker_process = subprocess.Popen(
             ["python", worker_path],
             stdin=subprocess.PIPE,
@@ -133,10 +152,13 @@ class NSFWScanner(App):
                         self.call_from_thread(lambda: scan_count_display.update(f"Images scanned: {scanned_images}"))
 
                         if data.get("status") == "nsfw_detected" and data.get("labels"):
-                            image_path = data["path"]
-                            labels = ", ".join([d["class"] for d in data["labels"]])
-                            self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path} - Labels: {labels}"))
-                            found_nsfw = True
+                            # Filter based on selected labels
+                            detected_labels = {d["class"] for d in data["labels"]}
+                            if any(label in self.selected_labels for label in detected_labels):
+                                image_path = data["path"]
+                                labels = ", ".join([d["class"] for d in data["labels"]])
+                                self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path} - Labels: {labels}"))
+                                found_nsfw = True
                         elif data.get("status") == "processed":
                             pass
 

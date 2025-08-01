@@ -24,6 +24,7 @@ log field in the TUI giving the full path of the image file and the labels for t
   - Background: `#282a36`
   - Foreground: `#f8f8f2`
   - Link Color: `#ff79c6`
+- Add descriptive docstrings to all classes and functions
 
 ## Notes for Agent
 - Use the Dracula theme color scheme for consistency.

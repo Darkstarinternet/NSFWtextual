@@ -9,22 +9,28 @@ Screen {
     height: 100%;
     padding: 1;
     layout: grid;
-    grid-rows: auto auto auto 3fr 2fr; /* Auto for top elements, 3:1 ratio for results:error-log */
+    grid-rows: auto 4 2 3fr 2fr; /* Set the button row to a fixed height of 4 */
 }
 
 #results {
     height: 1fr; /* Take up 3 fractional units of available space */
     border: solid #6272a4;
+    padding-left: 1;
+    padding-right: 1;
 }
 
 #error-log {
     height: 1fr; /* Take up 1 fractional unit of available space */
     border: solid #ff0000; /* Red border for visibility */
+    padding-left: 1;
+    padding-right: 1;
 }
 
 Button {
-    width: 100%;
+    border: darkslateblue;
+    color: #f8f8f2; /* Ensure text is visible by default */
     margin-bottom: 1;
+    width: 100%;
 }
 
 Button:hover {
@@ -32,8 +38,7 @@ Button:hover {
 }
 
 Button.-primary {
-    background: #50fa7b;
-    color: #282a36;
+    color: #282a36; /* Ensure text is dark on green background */
 }
 
 Button.-primary:hover {
@@ -55,7 +60,10 @@ Footer A {
 }
 
 #stats-line {
+    height: 5;
     layout: horizontal;
+    padding-left: 1;
+    padding-right: 1;
     width: 100%;
 }
 
@@ -64,6 +72,6 @@ Footer A {
 }
 
 #scan-timer {
-    width: 50%;
     text-align: right;
+    width: 50%;
 }
