@@ -9,10 +9,14 @@ readme = "README.md"
 requires-python = ">=3.12.4,<4.0.0"
 
 [tool.poetry.dependencies]
-nudenet = "*"
-textual = "*"
+nudenet = "^3.4.2"
+textual = "^5.2.0"
 
 [tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+mypy = "^1.17.1"
+pylint = "^3.3.7"
 textual-dev = "^1.7.0"
 
 [tool.autopep8]
