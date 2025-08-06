@@ -5,8 +5,6 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Header, Footer, Button, RichLog, Static
 from textual.binding import Binding
-from rich.text import Text
-from nudenet import NudeDetector
 import os
 import time
 from textual import work
@@ -17,9 +15,9 @@ import queue
 from nsfw.settings_screen import SettingsScreen
 
 
-def _reader_thread(pipe, queue):
+def _reader_thread(pipe, q):
     for line in iter(pipe.readline, ''):
-        queue.put(line)
+        q.put(line)
     pipe.close()
 
 
@@ -71,7 +69,7 @@ class NSFWScanner(App):
     def handle_settings_result(self, selected_labels: set[str]) -> None:
         """Handle the result from the settings screen."""
         self.selected_labels = selected_labels
-        self.query_one("#results").write(f"Selected labels: {self.selected_labels}")
+        self.query_one("#results", RichLog).write(f"Selected labels: {self.selected_labels}")
 
 
     def action_quit(self) -> None:
@@ -86,8 +84,8 @@ class NSFWScanner(App):
     @work(exclusive=True, thread=True)
     def scan_directory(self) -> None:
         """Scans the selected directory for NSFW images."""
-        results_log = self.query_one("#results")
-        error_log = self.query_one("#error-log")
+        results_log = self.query_one("#results", RichLog)
+        error_log = self.query_one("#error-log", RichLog)
         scan_count_display = self.query_one("#scan-count", Static)
         scan_timer_display = self.query_one("#scan-timer", Static)
 
@@ -180,10 +178,10 @@ class NSFWScanner(App):
             # Small sleep to prevent busy-waiting
             time.sleep(0.01)
 
-        # Ensure all threads are joined and process is waited for after loop breaks
+        # Ensure all threads are joined and the process is waited for after loop breaks
         stdout_thread.join()
         stderr_thread.join()
-        self.worker_process.wait() # Final wait to ensure process is truly finished
+        self.worker_process.wait() # Final wait to ensure the process is truly finished
 
         if not found_nsfw:
             self.call_from_thread(lambda: results_log.write("No NSFW images found."))
