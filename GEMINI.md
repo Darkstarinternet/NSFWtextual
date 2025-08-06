@@ -28,3 +28,4 @@ log field in the TUI giving the full path of the image file and the labels for t
 
 ## Notes for Agent
 - Use the Dracula theme color scheme for consistency.
+- When using the "replace" tool, reload the file and reexamine the code before making the replacement.
