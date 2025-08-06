@@ -7,10 +7,39 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.12.4,<4.0.0"
-dependencies = [
-    "nudenet>=3.4.2,<4.0.0",
-    "textual>=5.1.1,<6.0.0",
-]
+
+[tool.poetry.dependencies]
+nudenet = "*"
+textual = "*"
+
+[tool.poetry.group.dev.dependencies]
+textual-dev = "^1.7.0"
+
+[tool.autopep8]
+ignore = "E203"
+
+[tool.black]
+line_length = 120
+
+[tool.isort] # see: https://pycqa.github.io/isort/docs/configuration/options.html
+force_single_line = true # force one import per line
+include_trailing_comma = false
+known_third_party=""
+line_length = 120
+import_heading_future="Future libraries"
+import_heading_stdlib="Standard libraries"
+import_heading_thirdparty="Third party libraries"
+import_heading_firstparty="Project libraries"
+import_heading_localfolder="Local folder libraries"
+multi_line_output = 7
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.mypy]
+mypy_path = "/Users/Tom/Projects/Python/Battle/BattleDrupal/src"
+
+[tool.pyright]
+venv = "nsfw-N8erLiJj-py3.12" # the virtual environment
+venvPath = "/Users/Tom/Library/Caches/pypoetry/virtualenvs" # the virtual environment parent path
 
 [build-system]
 requires = ["poetry-core"]

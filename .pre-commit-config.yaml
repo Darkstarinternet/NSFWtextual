@@ -1,0 +1,129 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+# Run with "poetry run pre-commit run -a"
+
+########################################################################################################################
+# IMPORTANT NOTES:
+# 1) Do not use flake8 as it does not support config in pyproject.toml, see https://github.com/PyCQA/flake8/issues/234
+# 2) To automatically update all revs to the latest version run "pre-commit autoupdate"
+########################################################################################################################
+
+repos:
+
+  # AutoPEP8
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v2.0.4
+    hooks:
+      - id: autopep8
+        args: [
+          "--in-place",
+          "--max-line-length=120"
+        ]
+
+  # Black - file formatter, add arguments in pyproject.toml
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+
+  # ISort - Sorts import statements, add arguments in pyproject.toml
+  # for args see: https://pycqa.github.io/isort/docs/configuration/options.html
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+
+  # MyPy - type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.1
+    hooks:
+      - id: mypy
+        language: system # Important! Uses the poetry virtual environment rather than MyPy one
+        args: [
+          "--strict",
+          "--explicit-package-bases"
+        ]
+
+  # Pre Commit - Various tools, add arguments using args:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [
+          "--maxkb=600",
+          "--enforce-all"
+        ]
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      # - id: check-executables-have-shebangs
+      # - id: check-json
+      # - id: check-shebang-scripts-are-executable
+      # - id: check-merge-conflict-strings
+      # - id: check-symlinks
+      - id: check-toml
+      - id: check-vcs-permalinks
+      # - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      # - id: detect-awa-credentials
+      - id: detect-private-key
+      # - id: double-quote-string-fixer # use black instead which prefers double-quotes
+      - id: end-of-file-fixer
+        exclude: |
+          (?x)^(
+              .*\.csv$|
+              .*\Dockerfile$|
+              .*\.ipynb$|
+              .*\.md$|
+              .*\.puml$|
+              .*\.txt$
+          )$
+      - id: fix-byte-order-marker
+      # - id: file-contents-sorter
+      # - id: file-encoding-pragma
+      # - id: forbid-new-submodules
+      # - id: forbid-submodules
+      - id: mixed-line-ending
+      # - id: name-tests-test
+      # - id: no-commit-to-branch
+      # - id: pretty-format-json
+      # - id: requirements-txt-fixer
+      # - id: sort-simple-yaml
+      - id: trailing-whitespace
+        exclude: |
+          (?x)^(
+              .*\.md$
+          )$
+
+  # PyLint - linter
+  # see: https://pylint.pycqa.org/en/latest/user_guide/installation/pre-commit-integration.html
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.3.7
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+
+  # PyRight - linter
+  # for args see: https://microsoft.github.io/pyright/#/configuration?id=main-configuration-options
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.403
+    hooks:
+      - id: pyright
+        language: python
+
+  # Ruff - linter
+  # see: https://github.com/astral-sh/ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.12.7
+    hooks:
+      # Run the Ruff linter.
+      - id: ruff
+      # Run the Ruff formatter.
+      # - id: ruff-format
