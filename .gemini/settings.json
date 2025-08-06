@@ -1,0 +1,6 @@
+{
+  "hideBanner": true,
+  "hideTips": false,
+  "theme": "Dracula",
+  "preferredEditor": "Neovim"
+}
