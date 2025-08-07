@@ -24,7 +24,10 @@ def _reader_thread(pipe, q):
 class NSFWScanner(App):
     """A Textual app to scan a directory for NSFW images."""
 
-    SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images"
+    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/100x150"
+    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/150x225"
+    SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/250x375" # 302 ~ 17 sec
+    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/1200x1200" # 599 @ 1 min 17 sec
     # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/escort-photos/Marlene"
     # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/styles/image_widget_crop_100x150"
 
@@ -130,10 +133,20 @@ class NSFWScanner(App):
         stderr_thread.start()
 
         all_image_paths = []
-        for root, _, files in os.walk(self.SCAN_DIRECTORY):
-            for file in files:
-                if file.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
-                    all_image_paths.append(os.path.join(root, file))
+        directories = []
+        for root, dirs, files in os.walk(self.SCAN_DIRECTORY):
+            directories.append(root)
+
+        directories.sort() # Sort directories alphabetically
+
+        for root in directories:
+            files_in_dir = []
+            for file in os.listdir(root):
+                full_path = os.path.join(root, file)
+                if os.path.isfile(full_path) and file.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
+                    files_in_dir.append(full_path)
+            files_in_dir.sort() # Sort files within each directory
+            all_image_paths.extend(files_in_dir)
 
         # Send image paths to the worker
         for image_path in all_image_paths:
