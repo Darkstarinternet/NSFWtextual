@@ -27,7 +27,6 @@ Screen {
 }
 
 Button {
-    border: solid darkslateblue;
     color: #f8f8f2; /* Ensure text is visible by default */
     margin-bottom: 1;
 }
@@ -41,11 +40,12 @@ Button:hover {
 }
 
 Button.-primary {
+    background: #50fa7b;
     color: #282a36; /* Ensure text is dark on green background */
 }
 
 Button.-primary:hover {
-    background: #6272a4;
+    background: #44c76a;
 }
 
 #stop {
