@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, Button, Checkbox, Label, Static
+from textual.widgets import Header, Footer, Button, Checkbox, Label, Static, Select
 from textual.containers import Vertical, Horizontal, ScrollableContainer, Container
 from textual.reactive import reactive
 
@@ -12,10 +12,11 @@ class SettingsScreen(Screen):
     # Reactive property to track screen size
     checkboxes_per_row = reactive(4)
 
-    def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None, *, initial_labels: set[str]):
+    def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None, *, initial_labels: set[str], initial_model: str):
         super().__init__(name=name, id=id, classes=classes)
         self.initial_labels = initial_labels
         self.selected_labels = set(initial_labels) # Copy for modification
+        self.selected_model = initial_model # Store initial model selection
         # Create a mapping from safe IDs to actual labels
         self.id_to_label = {}
         self.label_to_id = {}
@@ -41,8 +42,20 @@ class SettingsScreen(Screen):
         """Create child widgets for the app."""
         yield Header()
 
+        # Container for the model selection
+        with Container(id="model-select-container"):
+            yield Label("Select NudeNet Model:", classes="settings-title")
+            yield Select(
+                options=[("Default Model", "default"), ("Base Model", "base")],
+                value=self.selected_model,
+                id="model_select",
+                prompt="Select a model"
+            )
+
         # Scrollable container for checkboxes
         with ScrollableContainer(id="checkboxes-container"):
+            yield Label("Toggle NudeNet Labels:", classes="settings-title")
+
             # Group labels by category for better organization
             categories = {
                 "Face": ["female face", "male face"],
@@ -84,6 +97,7 @@ class SettingsScreen(Screen):
 
         # Container for buttons
         with Container(id="buttons-container"):
+            yield Label("--- Actions ---", classes="category-header centered-label")
             with Horizontal(classes="button-row"):
                 yield Button("Select All", id="select_all", variant="default")
                 yield Button("Clear All", id="clear_all", variant="default")
@@ -105,9 +119,9 @@ class SettingsScreen(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save_settings":
-            self.dismiss(self.selected_labels) # Dismiss with the new selections
+            self.dismiss((self.selected_labels, self.selected_model)) # Dismiss with the new selections and model
         elif event.button.id == "cancel_settings":
-            self.dismiss(self.initial_labels) # Dismiss with original selections
+            self.dismiss((self.initial_labels, self.initial_model)) # Dismiss with original selections and model
         elif event.button.id == "select_all":
             # Select all checkboxes
             for checkbox in self.query(Checkbox):

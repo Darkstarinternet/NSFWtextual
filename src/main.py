@@ -70,6 +70,7 @@ class NSFWScanner(App):
         super().__init__(*args, **kwargs)
         self.worker_process = None # Initialize worker_process to None
         self.selected_labels = set(self.DEFAULT_LABELS) # Initialize with default labels
+        self.current_model = "default" # Default NudeNet model
         self.scanning = False # Flag to indicate if scanning is in progress
         self.stop_event = threading.Event() # Event to signal stopping of scan
 
@@ -106,10 +107,13 @@ class NSFWScanner(App):
             self.stop_event.set() # Set the stop event to signal termination
 
 
-    def handle_settings_result(self, selected_labels: set[str]) -> None:
+    def handle_settings_result(self, result: tuple[set[str], str]) -> None:
         """Handle the result from the settings screen."""
+        selected_labels, selected_model = result
         self.selected_labels = selected_labels
+        self.current_model = selected_model
         self.query_one("#results", RichLog).write(f"Selected labels: {self.selected_labels}")
+        self.query_one("#results", RichLog).write(f"Selected NudeNet Model: {self.current_model.title()}")
 
 
     def action_quit(self) -> None:
@@ -118,7 +122,7 @@ class NSFWScanner(App):
 
     def action_show_settings(self) -> None:
         """Show the settings screen."""
-        self.app.push_screen(SettingsScreen(initial_labels=self.selected_labels), self.handle_settings_result)
+        self.app.push_screen(SettingsScreen(initial_labels=self.selected_labels, initial_model=self.current_model), self.handle_settings_result)
 
     def action_open_file(self, path: str) -> None:
         """Action to open a file using the system's default application."""
@@ -154,7 +158,7 @@ class NSFWScanner(App):
 
         results_log.clear()
         results_log.write("Loading NSFW detector...")
-        results_log.write("NudeNet Model: Default (faster, less accurate)") # State the model explicitly
+        results_log.write(f"NudeNet Model: {self.current_model.title()}") # State the currently selected model
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()

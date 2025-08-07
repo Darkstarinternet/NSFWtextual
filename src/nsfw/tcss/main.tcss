@@ -161,3 +161,50 @@ Footer {
 .button-row Button:last-child {
     margin-right: 0;
 }
+
+/* Styling for the model selection container */
+#model-select-container {
+    width: 100%;
+    height: auto; /* Allow height to be determined by content */
+    padding: 1;
+    border: solid darkslateblue;
+    background: #21222c;
+    margin-bottom: 1; /* Space below this container */
+}
+
+/* Ensure the Select widget itself takes full width */
+#model_select {
+    width: 100%;
+}
+
+/* Updated styling for the checkboxes container to ensure it takes remaining space */
+#checkboxes-container {
+    width: 100%;
+    height: 1fr; /* Take all remaining vertical space */
+    overflow: auto;
+    padding: 1;
+    border: solid darkslateblue;
+}
+
+/* Styling for the buttons container (fixed at bottom) */
+#buttons-container {
+    width: 100%;
+    height: auto; /* Auto height to fit content */
+    padding: 1;
+    background: #21222c;
+    border: solid darkslateblue;
+    margin-top: 1; /* Space above this container */
+}
+
+#model-select-container {
+    width: 100%;
+    height: auto;
+    padding: 1;
+    border: solid darkslateblue;
+    background: #21222c;
+    margin-bottom: 1;
+}
+
+#model_select {
+    width: 100%;
+}
