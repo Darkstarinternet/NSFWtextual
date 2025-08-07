@@ -1,13 +1,16 @@
 import multiprocessing
-multiprocessing.set_start_method("spawn", force=True)
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal
 from textual.widgets import Header, Footer, Button, RichLog, Static
 from textual.binding import Binding
+from textual import on
+from textual import work
+
 import os
 import time
-from textual import work
+import platform
+import pyperclip
 import subprocess
 import json
 import threading
@@ -73,7 +76,7 @@ class NSFWScanner(App):
             with Container(id="stats-line"):
                 yield Static("Images scanned: 0", id="scan-count")
                 yield Static("Time elapsed: 00:00:00", id="scan-timer")
-            yield RichLog(id="results", wrap=True)
+            yield RichLog(id="results", wrap=True, markup=True, highlight=True)
             yield RichLog(id="error-log", wrap=True, auto_scroll=True)
         yield Footer()
 
@@ -104,6 +107,29 @@ class NSFWScanner(App):
     def action_show_settings(self) -> None:
         """Show the settings screen."""
         self.app.push_screen(SettingsScreen(initial_labels=self.selected_labels), self.handle_settings_result)
+
+    def action_open_file(self, path: str) -> None:
+        """Action to open a file using the system's default application."""
+        try:
+            if platform.system() == "Darwin":  # macOS
+                subprocess.run(["open", path], check=True)
+            elif platform.system() == "Windows":
+                os.startfile(path)
+            else:  # Linux
+                subprocess.run(["xdg-open", path], check=True)
+        except Exception as e:
+            error_log = self.query_one("#error-log", RichLog)
+            error_log.write(f"Error opening file {path}: {e}")
+
+    def action_copy_to_clipboard(self, text: str) -> None:
+        """Action to copy text to clipboard."""
+        try:
+            pyperclip.copy(text)
+            error_log = self.query_one("#error-log", RichLog)
+            error_log.write(f"Copied to clipboard: {text}")
+        except Exception as e:
+            error_log = self.query_one("#error-log", RichLog)
+            error_log.write(f"Error copying to clipboard: {e}")
 
 
     @work(exclusive=True, thread=True)
@@ -193,15 +219,18 @@ class NSFWScanner(App):
                             if any(label in self.selected_labels for label in detected_labels):
                                 labels = ", ".join([d["class"] for d in data["labels"]])
                                 image_path_display = image_path.replace(os.path.expanduser("~"), "~")
-                                self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path_display} - Labels: {labels}"))
+                                self.call_from_thread(lambda p=image_path, d=image_path_display, l=labels: 
+                                    results_log.write(f"NSFW: [@click=app.copy_to_clipboard('{p}')]📋[/] [@click=app.open_file('{p}')]{d}[/] - Labels: {l}"))
                                 found_nsfw = True
                             else:
                                 # NSFW detected but not in selected labels, still processed
                                 image_path_display = image_path.replace(os.path.expanduser("~"), "~")
-                                self.call_from_thread(lambda: results_log.write(f"{image_path_display}"))
+                                self.call_from_thread(lambda p=image_path, d=image_path_display: 
+                                    results_log.write(f"[@click=app.copy_to_clipboard('{p}')]📋[/] [@click=app.open_file('{p}')]{d}[/]"))
                         elif data.get("status") == "processed":
                             image_path_display = image_path.replace(os.path.expanduser("~"), "~")
-                            self.call_from_thread(lambda: results_log.write(f"{image_path_display}"))
+                            self.call_from_thread(lambda p=image_path, d=image_path_display: 
+                                results_log.write(f"[@click=app.copy_to_clipboard('{p}')]📋[/] [@click=app.open_file('{p}')]{d}[/]"))
 
                     except json.JSONDecodeError:
                         self.call_from_thread(lambda: error_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
