@@ -42,12 +42,27 @@ Button {
     padding: 1;
 }
 
-#settings-container {
-    overflow: auto;
+#settings-main {
     width: 100%;
-    height: 1fr;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+#checkboxes-container {
+    width: 100%;
+    height: 80%;
+    overflow: auto;
     padding: 1;
-    margin-bottom: 2;
+    border: solid darkslateblue;
+}
+
+#buttons-container {
+    width: 100%;
+    height: 100%;
+    background: #21222c;
+    border: solid darkslateblue;
+    max-height: 5;
 }
 
 .checkbox-row {

@@ -38,12 +38,14 @@ class SettingsScreen(Screen):
         return label.replace(" ", "_").replace("-", "_")
 
     def compose(self) -> ComposeResult:
+        """Create child widgets for the app."""
         yield Header()
 
-        # Scrollable container for the main content
-        with ScrollableContainer(id="settings-container"):
-            yield Label("Toggle NudeNet Labels:", classes="settings-title")
+        # Container for the title
+        yield Label("Toggle NudeNet Labels:", classes="settings-title")
 
+        # Scrollable container for checkboxes
+        with ScrollableContainer(id="checkboxes-container"):
             # Group labels by category for better organization
             categories = {
                 "Face": ["female face", "male face"],
@@ -83,13 +85,14 @@ class SettingsScreen(Screen):
                                 yield cb
                         checkbox_batch = []
 
-            # Action buttons section
-            yield Label("--- Actions ---", classes="category-header")
+        # Container for buttons
+        with Container(id="buttons-container"):
             with Horizontal(classes="button-row"):
                 yield Button("Select All", id="select_all", variant="default")
                 yield Button("Clear All", id="clear_all", variant="default")
                 yield Button("Save", id="save_settings", variant="primary")
                 yield Button("Cancel", id="cancel_settings")
+
         yield Footer()
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
