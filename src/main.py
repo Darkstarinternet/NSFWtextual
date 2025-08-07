@@ -151,6 +151,7 @@ class NSFWScanner(App):
                 if stdout_line:
                     try:
                         data = json.loads(stdout_line.strip())
+                        image_path = data["path"] # Define image_path here
                         # Always increment scanned_images for each processed image
                         scanned_images += 1
                         self.call_from_thread(lambda: scan_count_display.update(f"Images scanned: {scanned_images}"))
@@ -159,17 +160,17 @@ class NSFWScanner(App):
                             # Filter based on selected labels
                             detected_labels = {d["class"] for d in data["labels"]}
                             if any(label in self.selected_labels for label in detected_labels):
-                                image_path = data["path"]
                                 labels = ", ".join([d["class"] for d in data["labels"]])
-                                self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path} - Labels: {labels}"))
+                                image_path_display = image_path.replace(os.path.expanduser("~"), "~")
+                                self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path_display} - Labels: {labels}"))
                                 found_nsfw = True
                             else:
                                 # NSFW detected but not in selected labels, still processed
-                                image_path = data["path"]
-                                self.call_from_thread(lambda: results_log.write(f"Scanned: {image_path}"))
+                                image_path_display = image_path.replace(os.path.expanduser("~"), "~")
+                                self.call_from_thread(lambda: results_log.write(f"{image_path_display}"))
                         elif data.get("status") == "processed":
-                            image_path = data["path"]
-                            self.call_from_thread(lambda: results_log.write(f"Scanned: {image_path}"))
+                            image_path_display = image_path.replace(os.path.expanduser("~"), "~")
+                            self.call_from_thread(lambda: results_log.write(f"{image_path_display}"))
 
                     except json.JSONDecodeError:
                         self.call_from_thread(lambda: error_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
