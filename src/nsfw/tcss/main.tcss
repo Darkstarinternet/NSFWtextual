@@ -60,7 +60,7 @@ Button {
 Checkbox {
     width: 25%;
     height: 3;
-    max-width: 22;
+    max-width: 24;
     padding: 0 1 0 0;
     margin: 0;
 }
