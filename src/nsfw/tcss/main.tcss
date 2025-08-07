@@ -39,7 +39,7 @@ Button {
     text-style: bold;
     color: #8be9fd;
     margin: 0;
-    padding: 1;
+    padding: 0 0 1 1;
 }
 
 #settings-main {
@@ -50,19 +50,21 @@ Button {
 }
 
 #checkboxes-container {
-    width: 100%;
-    height: 80%;
     overflow: auto;
-    padding: 1;
+    padding: 0 1;
     border: solid darkslateblue;
 }
 
 #buttons-container {
     width: 100%;
-    height: 100%;
+    height: auto; /* Use auto-height to accommodate content */
     background: #21222c;
     border: solid darkslateblue;
-    max-height: 5;
+    align: center middle; /* Center the content within the container */
+}
+
+.centered-label {
+    text-align: center;
 }
 
 .checkbox-row {
@@ -140,4 +142,22 @@ Footer {
 #scan-timer {
     text-align: right;
     width: 50%;
+}
+
+.button-row {
+    width: 100%;
+    height: auto;
+    margin: 1 0;
+    align: center middle; /* Center the row vertically and horizontally */
+}
+
+.button-row Button {
+    width: 23%; /* Revert to percentage width, adjust as needed for screen size */
+    margin: 0 1 0 0; /* Add 1 character right margin for spacing */
+    min-height: 3;
+}
+
+/* Ensure the last button in the row doesn't have a right margin */
+.button-row Button:last-child {
+    margin-right: 0;
 }

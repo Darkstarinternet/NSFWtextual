@@ -41,9 +41,6 @@ class SettingsScreen(Screen):
         """Create child widgets for the app."""
         yield Header()
 
-        # Container for the title
-        yield Label("Toggle NudeNet Labels:", classes="settings-title")
-
         # Scrollable container for checkboxes
         with ScrollableContainer(id="checkboxes-container"):
             # Group labels by category for better organization
