@@ -1270,6 +1270,17 @@ spelling = ["pyenchant (>=3.2,<4.0)"]
 testutils = ["gitpython (>3)"]
 
 [[package]]
+name = "pyperclip"
+version = "1.9.0"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pyperclip-1.9.0.tar.gz", hash = "sha256:b7de0142ddc81bfc5c7507eea19da920b92252b548b96186caf94a5e2527d310"},
+]
+
+[[package]]
 name = "pyreadline3"
 version = "3.5.4"
 description = "A python implementation of GNU readline."
@@ -1324,14 +1335,14 @@ dev = ["hypothesis (>=6.70.0)", "pytest (>=7.1.0)"]
 
 [[package]]
 name = "textual"
-version = "5.2.0"
+version = "5.3.0"
 description = "Modern Text User Interface framework"
 optional = false
 python-versions = "<4.0.0,>=3.8.1"
 groups = ["main", "dev"]
 files = [
-    {file = "textual-5.2.0-py3-none-any.whl", hash = "sha256:5df1ef970a88ac9a266cbcace098f595f22706990f2506f6e545d9bb55983f1d"},
-    {file = "textual-5.2.0.tar.gz", hash = "sha256:6d4a77fddde7aa659acc25c3e14ed27ff75e125c6730c6f57263cf91b60e0d50"},
+    {file = "textual-5.3.0-py3-none-any.whl", hash = "sha256:02a6abc065514c4e21f94e79aaecea1f78a28a85d11d7bfc64abf3392d399890"},
+    {file = "textual-5.3.0.tar.gz", hash = "sha256:1b6128b339adef2e298cc23ab4777180443240ece5c232f29b22960efd658d4d"},
 ]
 
 [package.dependencies]
@@ -1544,4 +1555,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12.4,<4.0.0"
-content-hash = "c428ca0a640262f7930fc0cff10baadabf538ed7817339299cc5181bdff3f2e8"
+content-hash = "56dc3f63afe09a16272f3a44fbf52e0ca7fe60694cd20542753ac10d8f5e1b89"

@@ -10,7 +10,8 @@ requires-python = ">=3.12.4,<4.0.0"
 
 [tool.poetry.dependencies]
 nudenet = "^3.4.2"
-textual = "^5.2.0"
+textual = "^5.3.0"
+pyperclip = "^1.8.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
