@@ -3,10 +3,12 @@ from textual.screen import Screen
 from textual.widgets import Header, Footer, Button, Checkbox, Label, Static, Select
 from textual.containers import Vertical, Horizontal, ScrollableContainer, Container
 from textual.reactive import reactive
+from textual.binding import Binding
 
 class SettingsScreen(Screen):
     BINDINGS = [
         ("escape", "app.pop_screen", "Back"),
+        Binding("s", "", "", show=False), # Hide the 's' keybinding on this screen
     ]
 
     # Reactive property to track screen size
