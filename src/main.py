@@ -73,11 +73,14 @@ class NSFWScanner(App):
         self.current_model = "default" # Default NudeNet model
         self.scanning = False # Flag to indicate if scanning is in progress
         self.stop_event = threading.Event() # Event to signal stopping of scan
+        self.results_log = None # Initialize results log
+        self.notification_log = None # Initialize notification log
 
     def on_mount(self) -> None:
-        notification_log = self.query_one("#notifications-widget", RichLog)
-        notification_log.write(f"[bold blue]Initialized with NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
-        notification_log.write(f"[bold blue]Selected Labels:[/bold blue] [green]{sorted(list(self.selected_labels))}[/green]")
+        self.results_log = self.query_one("#results-widget", RichLog)
+        self.notification_log = self.query_one("#notifications-widget", RichLog)
+        self.notification_log.write(f"[bold blue]Initialized with NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
+        self.notification_log.write(f"[bold blue]Selected Labels:[/bold blue] [green]{sorted(list(self.selected_labels))}[/green]")
 
 
     def compose(self) -> ComposeResult:
@@ -103,8 +106,8 @@ class NSFWScanner(App):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""
         if event.button.id == "scan":
-            self.query_one("#results-widget", RichLog).clear()
-            self.query_one("#notifications-widget", RichLog).clear()
+            self.results_log.clear()
+            self.notification_log.clear()
             self.scanning = True
             self.stop_event.clear() # Clear the stop event for a new scan
             self.scan_directory()
@@ -140,18 +143,15 @@ class NSFWScanner(App):
             else:  # Linux
                 subprocess.run(["xdg-open", path], check=True)
         except Exception as e:
-            notification_log = self.query_one("#notifications-widget", RichLog)
-            notification_log.write(f"Error opening file {path}: {e}")
+            self.notification_log.write(f"Error opening file {path}: {e}")
 
     def action_copy_to_clipboard(self, text: str) -> None:
         """Action to copy text to clipboard."""
         try:
             pyperclip.copy(text)
-            notification_log = self.query_one("#notifications-widget", RichLog)
-            notification_log.write(f"Copied to clipboard: {text}")
+            self.notification_log.write(f"Copied to clipboard: {text}")
         except Exception as e:
-            notification_log = self.query_one("#notifications-widget", RichLog)
-            notification_log.write(f"Error copying to clipboard: {e}")
+            self.notification_log.write(f"Error copying to clipboard: {e}")
 
 
     @work(exclusive=True, thread=True)
@@ -257,9 +257,9 @@ class NSFWScanner(App):
                                 results_log.write(f"[@click=app.copy_to_clipboard('{p}')]📋[/] [@click=app.open_file('{p}')]{d}[/]"))
 
                     except json.JSONDecodeError:
-                        self.call_from_thread(lambda: notification_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
+                        self.call_from_thread(lambda: self.notification_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
                     except Exception as e:
-                        self.call_from_thread(lambda: notification_log.write(f"Error processing worker stdout: {e}"))
+                        self.call_from_thread(lambda: self.notification_log.write(f"Error processing worker stdout: {e}"))
             except queue.Empty:
                 pass
 
@@ -267,7 +267,7 @@ class NSFWScanner(App):
             try:
                 stderr_line = stderr_queue.get_nowait()
                 if stderr_line:
-                    self.call_from_thread(lambda: notification_log.write(f"{stderr_line.strip()}"))
+                    self.call_from_thread(lambda: self.notification_log.write(f"{stderr_line.strip()}"))
             except queue.Empty:
                 pass
 
@@ -283,8 +283,8 @@ class NSFWScanner(App):
         stderr_thread.join()
 
         if not found_nsfw:
-            self.call_from_thread(lambda: notification_log.write("No NSFW images found."))
-        self.call_from_thread(lambda: notification_log.write("Scan complete."))
+            self.call_from_thread(lambda: self.notification_log.write("No NSFW images found."))
+        self.call_from_thread(lambda: self.notification_log.write("Scan complete."))
         self.call_from_thread(lambda: timer_object.stop())
         self.scanning = False # Reset scanning flag
 
