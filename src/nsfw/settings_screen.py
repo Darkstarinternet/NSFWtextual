@@ -37,18 +37,21 @@ class SettingsScreen(Screen):
             # Display checkboxes grouped by category
             for category, category_labels in categories.items():
                 yield Label(f"--- {category} ---", classes="category-header")
-                for label in category_labels:
-                    # Create a safe ID for the checkbox
-                    safe_id = self._make_safe_id(label)
-                    self.id_to_label[safe_id] = label
-                    self.label_to_id[label] = safe_id
 
-                    checkbox = Checkbox(
-                        label.title(), 
-                        value=label in self.initial_labels, 
-                        id=f"checkbox_{safe_id}"
-                    )
-                    yield checkbox
+                # Create a horizontal container for checkboxes in this category
+                with Horizontal(classes="checkbox-row"):
+                    for label in category_labels:
+                        # Create a safe ID for the checkbox
+                        safe_id = self._make_safe_id(label)
+                        self.id_to_label[safe_id] = label
+                        self.label_to_id[label] = safe_id
+
+                        checkbox = Checkbox(
+                            label.title(), 
+                            value=label in self.initial_labels, 
+                            id=f"checkbox_{safe_id}"
+                        )
+                        yield checkbox
 
             with Horizontal(classes="settings-buttons"):
                 yield Button("Select All", id="select_all", variant="default")

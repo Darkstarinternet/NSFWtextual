@@ -48,8 +48,13 @@ Button {
     padding: 1;
 }
 
+.checkbox-row {
+    margin-bottom: 1;
+}
+
 Checkbox {
-    margin-left: 2;
+    min-width: 20;
+    width: auto;
     padding: 0 1;
     height: 3;
 }
