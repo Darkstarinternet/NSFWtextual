@@ -35,9 +35,6 @@ import_heading_localfolder="Local folder libraries"
 multi_line_output = 7
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 
-[tool.mypy]
-mypy_path = "/Users/Tom/Projects/Python/Battle/BattleDrupal/src"
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
