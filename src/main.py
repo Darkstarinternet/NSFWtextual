@@ -62,6 +62,7 @@ class NSFWScanner(App):
 
     # Use all labels from the default NudeNet model by default
     DEFAULT_LABELS = NUDENET_DEFAULT_LABELS.copy()
+    BASE_LABELS = NUDENET_BASE_LABELS.copy()
 
     SCREENS = {"settings": SettingsScreen}
 
