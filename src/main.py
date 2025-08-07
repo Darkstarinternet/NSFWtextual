@@ -24,8 +24,9 @@ def _reader_thread(pipe, q):
 class NSFWScanner(App):
     """A Textual app to scan a directory for NSFW images."""
 
+    SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images"
+    # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/escort-photos/Marlene"
     # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/styles/image_widget_crop_100x150"
-    SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/escort-photos/Marlene"
 
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", key_display="^q"),
