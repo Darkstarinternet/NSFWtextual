@@ -30,7 +30,10 @@ Button {
     border: solid darkslateblue;
     color: #f8f8f2; /* Ensure text is visible by default */
     margin-bottom: 1;
-    width: 100%;
+}
+
+#scan-buttons Button {
+    width: 50%;
 }
 
 Button:hover {
@@ -43,6 +46,15 @@ Button.-primary {
 
 Button.-primary:hover {
     background: #6272a4;
+}
+
+#stop {
+    background: #FF5555;
+    color: #f8f8f2;
+}
+
+#stop:hover {
+    background: #bd3737;
 }
 
 Header {

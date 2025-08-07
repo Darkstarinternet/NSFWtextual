@@ -2,7 +2,7 @@ import multiprocessing
 multiprocessing.set_start_method("spawn", force=True)
 
 from textual.app import App, ComposeResult
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.widgets import Header, Footer, Button, RichLog, Static
 from textual.binding import Binding
 import os
@@ -15,19 +15,26 @@ import queue
 from nsfw.settings_screen import SettingsScreen
 
 
-def _reader_thread(pipe, q):
-    for line in iter(pipe.readline, ''):
-        q.put(line)
+def _reader_thread(pipe, q, stop_event):
+    while not stop_event.is_set():
+        line = pipe.readline()
+        if line:
+            q.put(line)
+        else:
+            # If there's no line and the process is done, break
+            if pipe.closed or pipe.poll() is not None:
+                break
+        time.sleep(0.01) # Prevent busy-waiting
     pipe.close()
 
 
 class NSFWScanner(App):
     """A Textual app to scan a directory for NSFW images."""
 
-    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/100x150"
+    SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/100x150"     # 528 in 38 sec - # 1 min 14 sec
     # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/150x225"
-    SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/250x375" # 302 ~ 17 sec
-    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/1200x1200" # 599 @ 1 min 17 sec
+    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/250x375"   # 302 in 16-17 sec
+    # SCAN_DIRECTORY = "/Users/Tom/Projects/Python/NSFW/images/1200x1200" # 599 in 1 min 17 sec
     # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/escort-photos/Marlene"
     # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/styles/image_widget_crop_100x150"
 
@@ -48,6 +55,8 @@ class NSFWScanner(App):
         super().__init__(*args, **kwargs)
         self.worker_process = None # Initialize worker_process to None
         self.selected_labels = set(self.DEFAULT_LABELS) # Initialize with default labels
+        self.scanning = False # Flag to indicate if scanning is in progress
+        self.stop_event = threading.Event() # Event to signal stopping of scan
 
     def on_mount(self) -> None:
         pass
@@ -58,7 +67,9 @@ class NSFWScanner(App):
         yield Header()
         with Container(id="results-container"):
             yield Static(f"Scanning directory: {self.SCAN_DIRECTORY}", id="scan-directory")
-            yield Button("Scan", id="scan", variant="primary")
+            with Horizontal(id="scan-buttons"):
+                yield Button("Scan", id="scan", variant="primary")
+                yield Button("Stop", id="stop", variant="default")
             with Container(id="stats-line"):
                 yield Static("Images scanned: 0", id="scan-count")
                 yield Static("Time elapsed: 00:00:00", id="scan-timer")
@@ -72,7 +83,12 @@ class NSFWScanner(App):
         if event.button.id == "scan":
             self.query_one("#results", RichLog).clear()
             self.query_one("#error-log", RichLog).clear()
+            self.scanning = True
+            self.stop_event.clear() # Clear the stop event for a new scan
             self.scan_directory()
+        elif event.button.id == "stop":
+            self.scanning = False
+            self.stop_event.set() # Set the stop event to signal termination
 
 
     def handle_settings_result(self, selected_labels: set[str]) -> None:
@@ -99,7 +115,7 @@ class NSFWScanner(App):
         scan_timer_display = self.query_one("#scan-timer", Static)
 
         results_log.clear()
-        results_log.write("Loading detector...")
+        results_log.write("Loading NSFW detector...")
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()
@@ -126,8 +142,8 @@ class NSFWScanner(App):
         stdout_queue = queue.Queue()
         stderr_queue = queue.Queue()
 
-        stdout_thread = threading.Thread(target=_reader_thread, args=(self.worker_process.stdout, stdout_queue), daemon=True)
-        stderr_thread = threading.Thread(target=_reader_thread, args=(self.worker_process.stderr, stderr_queue), daemon=True)
+        stdout_thread = threading.Thread(target=_reader_thread, args=(self.worker_process.stdout, stdout_queue, self.stop_event), daemon=True)
+        stderr_thread = threading.Thread(target=_reader_thread, args=(self.worker_process.stderr, stderr_queue, self.stop_event), daemon=True)
 
         stdout_thread.start()
         stderr_thread.start()
@@ -150,6 +166,8 @@ class NSFWScanner(App):
 
         # Send image paths to the worker
         for image_path in all_image_paths:
+            if not self.scanning: # Check if stop button was pressed
+                break
             self.worker_process.stdin.write(image_path + "\n")
         self.worker_process.stdin.write("STOP\n") # Sentinel to stop the worker
         self.worker_process.stdin.flush() # Ensure all data is sent
@@ -157,7 +175,7 @@ class NSFWScanner(App):
 
         # Read results from the worker and errors from stderr
         # The main loop will continuously check queues for updates
-        while self.worker_process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
+        while self.scanning and (self.worker_process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty()):
             # Read from stdout
             try:
                 stdout_line = stdout_queue.get_nowait()
@@ -204,14 +222,18 @@ class NSFWScanner(App):
             time.sleep(0.01)
 
         # Ensure all threads are joined and the process is waited for after loop breaks
+        if self.worker_process and self.worker_process.poll() is None:
+            self.worker_process.terminate() # Terminate the worker process if it's still running
+            self.worker_process.wait()
+
         stdout_thread.join()
         stderr_thread.join()
-        self.worker_process.wait() # Final wait to ensure the process is truly finished
 
         if not found_nsfw:
             self.call_from_thread(lambda: results_log.write("No NSFW images found."))
         self.call_from_thread(lambda: results_log.write("Scan complete."))
         self.call_from_thread(lambda: timer_object.stop())
+        self.scanning = False # Reset scanning flag
 
 
 if __name__ == "__main__":
