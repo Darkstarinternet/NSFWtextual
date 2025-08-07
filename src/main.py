@@ -76,8 +76,8 @@ class NSFWScanner(App):
 
     def on_mount(self) -> None:
         notification_log = self.query_one("#notifications-widget", RichLog)
-        notification_log.write(f"Initialized with NudeNet Model: {self.current_model.title()}")
-        notification_log.write(f"Selected Labels: {sorted(list(self.selected_labels))}")
+        notification_log.write(f"[bold blue]Initialized with NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
+        notification_log.write(f"[bold blue]Selected Labels:[/bold blue] [green]{sorted(list(self.selected_labels))}[/green]")
 
 
     def compose(self) -> ComposeResult:
@@ -94,7 +94,7 @@ class NSFWScanner(App):
             results_widet = RichLog(id="results-widget", wrap=True, markup=True, highlight=True)
             results_widet.border_title = "Results"
             yield results_widet
-            notifications_widget = RichLog(id="notifications-widget", wrap=True, auto_scroll=True)
+            notifications_widget = RichLog(id="notifications-widget", wrap=True, auto_scroll=True, markup=True)
             notifications_widget.border_title = "Notifications"
             yield notifications_widget
         yield Footer()
@@ -163,8 +163,11 @@ class NSFWScanner(App):
         scan_timer_display = self.query_one("#scan-timer", Static)
 
         results_log.clear()
-        notification_log.write("Loading NSFW detector...") # Changed from results_log
-        notification_log.write(f"NudeNet Model: {self.current_model.title()}") # Changed from results_log
+        notification_log.write("[bold blue]Loading NSFW detector...[/bold blue]")
+        notification_log.write(f"[bold blue]NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
+
+        results_log.write("[bold blue]Loading NSFW detector...[/bold blue]")
+        results_log.write(f"[bold blue]NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()
