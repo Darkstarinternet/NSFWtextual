@@ -89,16 +89,20 @@ class NSFWScanner(App):
             with Container(id="stats-line"):
                 yield Static("Images scanned: 0", id="scan-count")
                 yield Static("Time elapsed: 00:00:00", id="scan-timer")
-            yield RichLog(id="results", wrap=True, markup=True, highlight=True)
-            yield RichLog(id="error-log", wrap=True, auto_scroll=True)
+            results_widet = RichLog(id="results-widget", wrap=True, markup=True, highlight=True)
+            results_widet.border_title = "Results"
+            yield results_widet
+            notifications_widget = RichLog(id="notifications-widget", wrap=True, auto_scroll=True)
+            notifications_widget.border_title = "Notifications"
+            yield notifications_widget
         yield Footer()
 
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""
         if event.button.id == "scan":
-            self.query_one("#results", RichLog).clear()
-            self.query_one("#error-log", RichLog).clear()
+            self.query_one("#results-widget", RichLog).clear()
+            self.query_one("#notifications-widget", RichLog).clear()
             self.scanning = True
             self.stop_event.clear() # Clear the stop event for a new scan
             self.scan_directory()
@@ -112,8 +116,8 @@ class NSFWScanner(App):
         selected_labels, selected_model = result
         self.selected_labels = selected_labels
         self.current_model = selected_model
-        self.query_one("#results", RichLog).write(f"Selected NudeNet Model: {self.current_model.title()}")
-        self.query_one("#results", RichLog).write(f"Selected labels: {self.selected_labels}")
+        self.query_one("#results-widget", RichLog).write(f"Selected NudeNet Model: {self.current_model.title()}")
+        self.query_one("#results-widget", RichLog).write(f"Selected labels: {self.selected_labels}")
 
 
     def action_quit(self) -> None:
@@ -151,8 +155,8 @@ class NSFWScanner(App):
     @work(exclusive=True, thread=True)
     def scan_directory(self) -> None:
         """Scans the selected directory for NSFW images."""
-        results_log = self.query_one("#results", RichLog)
-        error_log = self.query_one("#error-log", RichLog)
+        results_log = self.query_one("#results-widget", RichLog)
+        notification_log = self.query_one("#notifications-widget", RichLog)
         scan_count_display = self.query_one("#scan-count", Static)
         scan_timer_display = self.query_one("#scan-timer", Static)
 
@@ -260,7 +264,7 @@ class NSFWScanner(App):
             try:
                 stderr_line = stderr_queue.get_nowait()
                 if stderr_line:
-                    self.call_from_thread(lambda: error_log.write(f"{stderr_line.strip()}"))
+                    self.call_from_thread(lambda: notification_log.write(f"{stderr_line.strip()}"))
             except queue.Empty:
                 pass
 
