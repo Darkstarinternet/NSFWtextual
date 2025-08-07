@@ -1,12 +1,16 @@
 from textual.app import App, ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, Button, Checkbox, Label
-from textual.containers import Vertical, Horizontal, ScrollableContainer
+from textual.widgets import Header, Footer, Button, Checkbox, Label, Static
+from textual.containers import Vertical, Horizontal, ScrollableContainer, Container
+from textual.reactive import reactive
 
 class SettingsScreen(Screen):
     BINDINGS = [
         ("escape", "app.pop_screen", "Back"),
     ]
+
+    # Reactive property to track screen size
+    checkboxes_per_row = reactive(4)
 
     def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None, *, initial_labels: set[str]):
         super().__init__(name=name, id=id, classes=classes)
@@ -16,12 +20,27 @@ class SettingsScreen(Screen):
         self.id_to_label = {}
         self.label_to_id = {}
 
+    def on_resize(self) -> None:
+        """Handle terminal resize events to adjust layout."""
+        # Get the current width
+        width = self.size.width
+
+        # Adjust checkboxes per row based on width
+        if width < 80:  # Narrow screens
+            self.checkboxes_per_row = 2
+        elif width < 120:  # Medium screens
+            self.checkboxes_per_row = 3
+        else:  # Wide screens
+            self.checkboxes_per_row = 4
+
     def _make_safe_id(self, label: str) -> str:
         """Convert a label to a safe ID by replacing spaces with underscores."""
         return label.replace(" ", "_").replace("-", "_")
 
     def compose(self) -> ComposeResult:
         yield Header()
+
+        # Scrollable container for the main content
         with ScrollableContainer(id="settings-container"):
             yield Label("Toggle NudeNet Labels:", classes="settings-title")
 
@@ -38,22 +57,35 @@ class SettingsScreen(Screen):
             for category, category_labels in categories.items():
                 yield Label(f"--- {category} ---", classes="category-header")
 
-                # Create a horizontal container for checkboxes in this category
-                with Horizontal(classes="checkbox-row"):
-                    for label in category_labels:
-                        # Create a safe ID for the checkbox
-                        safe_id = self._make_safe_id(label)
-                        self.id_to_label[safe_id] = label
-                        self.label_to_id[label] = safe_id
+                # Create checkboxes in batches based on screen width
+                checkbox_batch = []
+                for i, label in enumerate(category_labels):
+                    # Create a safe ID for the checkbox
+                    safe_id = self._make_safe_id(label)
+                    self.id_to_label[safe_id] = label
+                    self.label_to_id[label] = safe_id
 
-                        checkbox = Checkbox(
-                            label.title(), 
-                            value=label in self.initial_labels, 
-                            id=f"checkbox_{safe_id}"
-                        )
-                        yield checkbox
+                    checkbox = Checkbox(
+                        label.title(), 
+                        value=label in self.initial_labels, 
+                        id=f"checkbox_{safe_id}"
+                    )
+                    checkbox_batch.append(checkbox)
 
-            with Horizontal(classes="settings-buttons"):
+                    # Create a new row based on the dynamic checkboxes_per_row value
+                    if (i + 1) % self.checkboxes_per_row == 0 or i == len(category_labels) - 1:
+                        row_class = "checkbox-row"
+                        if i == len(category_labels) - 1 and len(checkbox_batch) < self.checkboxes_per_row:
+                            row_class = f"checkbox-row checkbox-row-{len(checkbox_batch)}"
+
+                        with Horizontal(classes=row_class):
+                            for cb in checkbox_batch:
+                                yield cb
+                        checkbox_batch = []
+
+            # Action buttons section
+            yield Label("--- Actions ---", classes="category-header")
+            with Horizontal(classes="button-row"):
                 yield Button("Select All", id="select_all", variant="default")
                 yield Button("Clear All", id="clear_all", variant="default")
                 yield Button("Save", id="save_settings", variant="primary")
