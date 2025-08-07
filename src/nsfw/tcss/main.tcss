@@ -35,6 +35,25 @@ Button {
     width: 50%;
 }
 
+.category-header {
+    text-style: bold;
+    color: #8be9fd;
+    margin: 0;
+    padding: 1;
+}
+
+#settings-container {
+    overflow: auto;
+    max-height: 100%;
+    padding: 1;
+}
+
+Checkbox {
+    margin-left: 2;
+    padding: 0 1;
+    height: 3;
+}
+
 Button:hover {
     background: #44475a;
 }
