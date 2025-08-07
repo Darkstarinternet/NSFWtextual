@@ -154,6 +154,7 @@ class NSFWScanner(App):
 
         results_log.clear()
         results_log.write("Loading NSFW detector...")
+        results_log.write("NudeNet Model: Default (faster, less accurate)") # State the model explicitly
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()

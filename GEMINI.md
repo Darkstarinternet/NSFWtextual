@@ -30,3 +30,27 @@ log field in the TUI giving the full path of the image file and the labels for t
 - Use the Dracula theme color scheme for consistency.
 - When using the "replace" tool, reload the file and reexamine the code before making the replacement.
 - Do not offer to run PyLint or other linting tools
+- The class labels for the NudeNet default model are:
+    "exposed anus"
+    "exposed armpits"
+    "belly"
+    "exposed belly"
+    "buttocks"
+    "exposed buttocks"
+    "female face"
+    "male face"
+    "feet"
+    "exposed feet"
+    "breast"
+    "exposed breast"
+    "vagina"
+    "exposed vagina"
+    "male breast"
+    "exposed penis"
+- The class labels for the NudeNet base model are:
+    "exposed belly"
+    "exposed buttocks"
+    "exposed breasts"
+    "exposed vagina"
+    "exposed penis"
+    "male breast"
