@@ -116,10 +116,8 @@ Footer {
 #buttons-container {
     width: 100%;
     height: auto; /* Auto height to fit content */
-    padding: 1;
     background: #21222c;
     border: solid darkslateblue;
-    margin-top: 1; /* Space above this container */
 }
 
 .button-row {
@@ -178,7 +176,6 @@ Checkbox {
     padding: 1;
     border: solid darkslateblue;
     background: #21222c;
-    margin-bottom: 1; /* Space below this container */
 }
 
 /* Ensure the Select widget itself takes full width */
