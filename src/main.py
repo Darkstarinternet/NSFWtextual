@@ -48,19 +48,20 @@ class NSFWScanner(App):
 
     ENABLE_COMMAND_PALETTE = False
 
-    # All possible labels from NudeNet classifier
-    ALL_LABELS = {
-        # Default model labels
-        "exposed anus", "exposed armpits", "belly", "exposed belly",
-        "buttocks", "exposed buttocks", "female face", "male face",
-        "feet", "exposed feet", "breast", "exposed breast",
-        "vagina", "exposed vagina", "male breast", "exposed penis",
-        # Base model labels (if not already included)
-        "exposed breasts"
+    # All possible labels from NudeNet default faster model
+    NUDENET_DEFAULT_LABELS = {
+        "exposed anus", "exposed armpits", "belly", "exposed belly", "buttocks", "exposed buttocks", "female face",
+        "male face", "feet", "exposed feet", "breast", "exposed breast", "vagina", "exposed vagina", "male breast",
+        "exposed penis"
     }
 
-    # Use all labels by default
-    DEFAULT_LABELS = ALL_LABELS.copy()
+    # All possible labels from NudeNet base more accurate model
+    NUDENET_BASE_LABELS = {
+        "exposed belly", "exposed buttocks", "exposed breasts", "exposed vagina", "exposed penis", "male breast"
+    }
+
+    # Use all labels from the default NudeNet model by default
+    DEFAULT_LABELS = NUDENET_DEFAULT_LABELS.copy()
 
     SCREENS = {"settings": SettingsScreen}
 
