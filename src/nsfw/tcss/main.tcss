@@ -9,30 +9,35 @@ Screen {
     height: 100%;
     padding: 1;
     layout: grid;
-    grid-rows: auto 4 2 3fr 2fr; /* Set the button row to a fixed height of 4 */
+    grid-rows: 2 4 2 5fr 2fr;
 }
 
 #results {
-    height: 1fr; /* Take up 3 fractional units of available space */
+    height: 2fr;
     border: solid darkslateblue;
     padding-left: 1;
     padding-right: 1;
 }
 
 #error-log {
-    height: 1fr; /* Take up 1 fractional unit of available space */
-    border: solid darkslateblue; /* Darkslateblue border for visibility */
+    height: 1fr;
+    border: solid darkslateblue;
     padding-left: 1;
     padding-right: 1;
 }
 
 Button {
-    color: #f8f8f2; /* Ensure text is visible by default */
+    color: #f8f8f2;
     margin-bottom: 1;
 }
 
 #scan-buttons Button {
     width: 50%;
+    margin: 0 2 0 1;
+}
+
+#scan-directory {
+    padding-left: 1;
 }
 
 .category-header {

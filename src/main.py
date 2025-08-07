@@ -112,8 +112,8 @@ class NSFWScanner(App):
         selected_labels, selected_model = result
         self.selected_labels = selected_labels
         self.current_model = selected_model
-        self.query_one("#results", RichLog).write(f"Selected labels: {self.selected_labels}")
         self.query_one("#results", RichLog).write(f"Selected NudeNet Model: {self.current_model.title()}")
+        self.query_one("#results", RichLog).write(f"Selected labels: {self.selected_labels}")
 
 
     def action_quit(self) -> None:
