@@ -24,12 +24,15 @@ def _reader_thread(pipe, q):
 class NSFWScanner(App):
     """A Textual app to scan a directory for NSFW images."""
 
+    # SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/styles/image_widget_crop_100x150"
     SCAN_DIRECTORY = "/Users/Tom/Websites/beddev/sites/default/files/escort-photos/Marlene"
 
     BINDINGS = [
-        Binding("q", "quit", "Quit", key_display="Q"),
+        Binding("ctrl+q", "quit", "Quit", key_display="^q"),
         Binding("s", "show_settings", "Settings", key_display="S"),
     ]
+
+    ENABLE_COMMAND_PALETTE = False
 
     DEFAULT_LABELS = {"female_genitalia", "male_genitalia", "buttocks", "female_breast", "anus", "face"}
 
@@ -90,7 +93,7 @@ class NSFWScanner(App):
         scan_timer_display = self.query_one("#scan-timer", Static)
 
         results_log.clear()
-        results_log.write("Starting scan...")
+        results_log.write("Loading detector...")
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()

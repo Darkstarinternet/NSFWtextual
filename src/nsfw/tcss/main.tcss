@@ -1,7 +1,7 @@
 Screen {
     background: #282a36;
     color: #f8f8f2;
-    border: solid #6272a4;
+    border: solid darkslateblue;
 }
 
 #results-container {
@@ -14,20 +14,20 @@ Screen {
 
 #results {
     height: 1fr; /* Take up 3 fractional units of available space */
-    border: solid #6272a4;
+    border: solid darkslateblue;
     padding-left: 1;
     padding-right: 1;
 }
 
 #error-log {
     height: 1fr; /* Take up 1 fractional unit of available space */
-    border: solid #ff0000; /* Red border for visibility */
+    border: solid darkslateblue; /* Darkslateblue border for visibility */
     padding-left: 1;
     padding-right: 1;
 }
 
 Button {
-    border: darkslateblue;
+    border: solid darkslateblue;
     color: #f8f8f2; /* Ensure text is visible by default */
     margin-bottom: 1;
     width: 100%;
