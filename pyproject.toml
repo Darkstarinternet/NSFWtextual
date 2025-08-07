@@ -19,9 +19,6 @@ mypy = "^1.17.1"
 pylint = "^3.3.7"
 textual-dev = "^1.7.0"
 
-[tool.autopep8]
-ignore = "E203"
-
 [tool.black]
 line_length = 120
 
@@ -40,10 +37,6 @@ sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 
 [tool.mypy]
 mypy_path = "/Users/Tom/Projects/Python/Battle/BattleDrupal/src"
-
-[tool.pyright]
-venv = "nsfw-N8erLiJj-py3.12" # the virtual environment
-venvPath = "/Users/Tom/Library/Caches/pypoetry/virtualenvs" # the virtual environment parent path
 
 [build-system]
 requires = ["poetry-core"]
