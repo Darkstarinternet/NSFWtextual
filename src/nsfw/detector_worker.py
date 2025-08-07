@@ -19,8 +19,6 @@ def main():
         if image_path == "STOP":
             break
         try:
-            sys.stderr.write(f"Processing image: {image_path}\n")
-            sys.stderr.flush()
             result = detector.detect(image_path)
             if result:
                 sys.stdout.write(json.dumps({"path": image_path, "labels": result, "status": "nsfw_detected"}) + "\n")

@@ -66,6 +66,8 @@ class NSFWScanner(App):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""
         if event.button.id == "scan":
+            self.query_one("#results", RichLog).clear()
+            self.query_one("#error-log", RichLog).clear()
             self.scan_directory()
 
 
@@ -160,8 +162,13 @@ class NSFWScanner(App):
                                 labels = ", ".join([d["class"] for d in data["labels"]])
                                 self.call_from_thread(lambda: results_log.write(f"NSFW: {image_path} - Labels: {labels}"))
                                 found_nsfw = True
+                            else:
+                                # NSFW detected but not in selected labels, still processed
+                                image_path = data["path"]
+                                self.call_from_thread(lambda: results_log.write(f"Scanned: {image_path}"))
                         elif data.get("status") == "processed":
-                            pass
+                            image_path = data["path"]
+                            self.call_from_thread(lambda: results_log.write(f"Scanned: {image_path}"))
 
                     except json.JSONDecodeError:
                         self.call_from_thread(lambda: error_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
@@ -174,7 +181,7 @@ class NSFWScanner(App):
             try:
                 stderr_line = stderr_queue.get_nowait()
                 if stderr_line:
-                    self.call_from_thread(lambda: error_log.write(f"Worker Error: {stderr_line.strip()}"))
+                    self.call_from_thread(lambda: error_log.write(f"{stderr_line.strip()}"))
             except queue.Empty:
                 pass
 
