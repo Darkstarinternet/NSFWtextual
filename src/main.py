@@ -75,7 +75,9 @@ class NSFWScanner(App):
         self.stop_event = threading.Event() # Event to signal stopping of scan
 
     def on_mount(self) -> None:
-        pass
+        notification_log = self.query_one("#notifications-widget", RichLog)
+        notification_log.write(f"Initialized with NudeNet Model: {self.current_model.title()}")
+        notification_log.write(f"Selected Labels: {sorted(list(self.selected_labels))}")
 
 
     def compose(self) -> ComposeResult:
@@ -138,18 +140,18 @@ class NSFWScanner(App):
             else:  # Linux
                 subprocess.run(["xdg-open", path], check=True)
         except Exception as e:
-            error_log = self.query_one("#error-log", RichLog)
-            error_log.write(f"Error opening file {path}: {e}")
+            notification_log = self.query_one("#notifications-widget", RichLog)
+            notification_log.write(f"Error opening file {path}: {e}")
 
     def action_copy_to_clipboard(self, text: str) -> None:
         """Action to copy text to clipboard."""
         try:
             pyperclip.copy(text)
-            error_log = self.query_one("#error-log", RichLog)
-            error_log.write(f"Copied to clipboard: {text}")
+            notification_log = self.query_one("#notifications-widget", RichLog)
+            notification_log.write(f"Copied to clipboard: {text}")
         except Exception as e:
-            error_log = self.query_one("#error-log", RichLog)
-            error_log.write(f"Error copying to clipboard: {e}")
+            notification_log = self.query_one("#notifications-widget", RichLog)
+            notification_log.write(f"Error copying to clipboard: {e}")
 
 
     @work(exclusive=True, thread=True)
@@ -161,8 +163,8 @@ class NSFWScanner(App):
         scan_timer_display = self.query_one("#scan-timer", Static)
 
         results_log.clear()
-        results_log.write("Loading NSFW detector...")
-        results_log.write(f"NudeNet Model: {self.current_model.title()}") # State the currently selected model
+        notification_log.write("Loading NSFW detector...") # Changed from results_log
+        notification_log.write(f"NudeNet Model: {self.current_model.title()}") # Changed from results_log
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()
@@ -254,9 +256,9 @@ class NSFWScanner(App):
                                 results_log.write(f"[@click=app.copy_to_clipboard('{p}')]📋[/] [@click=app.open_file('{p}')]{d}[/]"))
 
                     except json.JSONDecodeError:
-                        self.call_from_thread(lambda: error_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
+                        self.call_from_thread(lambda: notification_log.write(f"Error decoding JSON from worker stdout: {stdout_line.strip()}"))
                     except Exception as e:
-                        self.call_from_thread(lambda: error_log.write(f"Error processing worker stdout: {e}"))
+                        self.call_from_thread(lambda: notification_log.write(f"Error processing worker stdout: {e}"))
             except queue.Empty:
                 pass
 
@@ -280,8 +282,8 @@ class NSFWScanner(App):
         stderr_thread.join()
 
         if not found_nsfw:
-            self.call_from_thread(lambda: results_log.write("No NSFW images found."))
-        self.call_from_thread(lambda: results_log.write("Scan complete."))
+            self.call_from_thread(lambda: notification_log.write("No NSFW images found."))
+        self.call_from_thread(lambda: notification_log.write("Scan complete."))
         self.call_from_thread(lambda: timer_object.stop())
         self.scanning = False # Reset scanning flag
 
