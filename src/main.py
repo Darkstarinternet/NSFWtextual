@@ -166,8 +166,6 @@ class NSFWScanner(App):
         notification_log.write("[bold blue]Loading NSFW detector...[/bold blue]")
         notification_log.write(f"[bold blue]NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
 
-        results_log.write("[bold blue]Loading NSFW detector...[/bold blue]")
-        results_log.write(f"[bold blue]NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
         found_nsfw = False
         scanned_images = 0
         start_time = time.time()

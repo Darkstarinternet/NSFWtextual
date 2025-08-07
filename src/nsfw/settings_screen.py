@@ -44,7 +44,6 @@ class SettingsScreen(Screen):
 
         # Container for the model selection
         with Container(id="model-select-container"):
-            yield Label("Select NudeNet Model:", classes="settings-title")
             yield Select(
                 options=[("Default Model", "default"), ("Base Model", "base")],
                 value=self.selected_model,
@@ -54,20 +53,19 @@ class SettingsScreen(Screen):
 
         # Scrollable container for checkboxes
         with ScrollableContainer(id="checkboxes-container"):
-            yield Label("Toggle NudeNet Labels:", classes="settings-title")
-
             # Group labels by category for better organization
-            categories = {
+            default_labels = {
                 "Face": ["female face", "male face"],
-                "Upper Body": ["breast", "exposed breast", "exposed breasts", "male breast", "exposed armpits"],
+                "Upper Body": ["breast", "exposed breast", "male breast", "exposed armpits"],
                 "Midsection": ["belly", "exposed belly"],
-                "Lower Body": ["buttocks", "exposed buttocks", "vagina", "exposed vagina", "exposed penis", "exposed anus"],
+                "Lower Body": ["buttocks", "exposed buttocks", "vagina", "exposed vagina", "exposed penis",
+                               "exposed anus"],
                 "Extremities": ["feet", "exposed feet"]
             }
 
             # Display checkboxes grouped by category
-            for category, category_labels in categories.items():
-                yield Label(f"--- {category} ---", classes="category-header")
+            for category, category_labels in default_labels.items():
+                yield Label(f"--- {category} ---", classes="settings-heading")
 
                 # Create checkboxes in batches based on screen width
                 checkbox_batch = []
@@ -97,7 +95,6 @@ class SettingsScreen(Screen):
 
         # Container for buttons
         with Container(id="buttons-container"):
-            yield Label("--- Actions ---", classes="category-header centered-label")
             with Horizontal(classes="button-row"):
                 yield Button("Select All", id="select_all", variant="default")
                 yield Button("Clear All", id="clear_all", variant="default")
