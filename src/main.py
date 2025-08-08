@@ -81,7 +81,7 @@ class NSFWScanner(App):
     def on_mount(self) -> None:
         self.results_log = self.query_one("#results-widget", RichLog)
         self.notification_log = self.query_one("#notifications-widget", RichLog)
-        self.notification_log.write(f"[bold blue]Initialized with NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
+        self.notification_log.write(f"[bold blue]NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
         self.notification_log.write(f"[bold blue]Selected Labels:[/bold blue] [green]{sorted(list(self.selected_labels))}[/green]")
 
 
@@ -123,8 +123,9 @@ class NSFWScanner(App):
         selected_labels, selected_model = result
         self.selected_labels = selected_labels
         self.current_model = selected_model
-        self.query_one("#results-widget", RichLog).write(f"Selected NudeNet Model: {self.current_model.title()}")
-        self.query_one("#results-widget", RichLog).write(f"Selected labels: {self.selected_labels}")
+        self.notification_log.clear()
+        self.notification_log.write(f"[bold blue]NudeNet Model:[/bold blue] [green]{self.current_model.title()}[/green]")
+        self.notification_log.write(f"[bold blue]Selected Labels:[/bold blue] [green]{sorted(list(self.selected_labels))}[/green]")
 
 
     def action_quit(self) -> None:
