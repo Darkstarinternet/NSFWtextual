@@ -15,7 +15,7 @@ import subprocess
 import json
 import threading
 import queue
-from nsfw.settings_screen import SettingsScreen
+from nsfwtextual.settings_screen import SettingsScreen
 
 
 def _reader_thread(pipe, q, stop_event):
@@ -66,7 +66,7 @@ class NSFWScanner(App):
 
     SCREENS = {"settings": SettingsScreen}
 
-    CSS_PATH = "nsfw/tcss/main.tcss"
+    CSS_PATH = "nsfwtextual/tcss/main.tcss"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -182,7 +182,7 @@ class NSFWScanner(App):
         timer_object = self.call_from_thread(lambda: self.set_interval(1, update_timer))
 
         # Start the detector worker subprocess
-        worker_path = os.path.join(os.path.dirname(__file__), "nsfw", "detector_worker.py")
+        worker_path = os.path.join(os.path.dirname(__file__), "nsfwtextual", "detector_worker.py")
         self.worker_process = subprocess.Popen(
             ["python", worker_path],
             stdin=subprocess.PIPE,
